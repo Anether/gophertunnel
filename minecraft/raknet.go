@@ -2,6 +2,7 @@ package minecraft
 
 import (
 	"context"
+	"errors"
 	"github.com/sandertv/go-raknet"
 	"net"
 )
@@ -11,7 +12,11 @@ type RakNet struct{}
 
 // DialContext ...
 func (r RakNet) DialContext(ctx context.Context, address string) (net.Conn, error) {
-	return raknet.DialContext(ctx, address)
+	protocol, ok := ctx.Value("protocol").(byte)
+	if !ok {
+		return nil, errors.New("protocol not defined")
+	}
+	return raknet.DialContext(ctx, address, protocol)
 }
 
 // PingContext ...

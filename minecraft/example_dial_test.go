@@ -1,6 +1,7 @@
 package minecraft_test
 
 import (
+	"context"
 	"fmt"
 	"github.com/sandertv/gophertunnel/minecraft"
 	"github.com/sandertv/gophertunnel/minecraft/auth"
@@ -14,7 +15,7 @@ func ExampleDial() {
 	}
 	// Dial a new connection to the target server.
 	address := "mco.mineplex.com:19132"
-	conn, err := dialer.Dial("raknet", address)
+	conn, err := dialer.DialContext(context.WithValue(context.TODO(), "protocol", 11), "raknet", address)
 	if err != nil {
 		panic(err)
 	}

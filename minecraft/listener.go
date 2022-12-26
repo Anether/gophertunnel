@@ -172,6 +172,11 @@ func (listener *Listener) Close() error {
 	return listener.listener.Close()
 }
 
+// NetworkListener return the listener
+func (listener *Listener) NetworkListener() NetworkListener {
+	return listener.listener
+}
+
 // updatePongData updates the pong data of the listener using the current only players, maximum players and
 // server name of the listener, provided the listener isn't currently hijacking the pong of another server.
 func (listener *Listener) updatePongData() {
