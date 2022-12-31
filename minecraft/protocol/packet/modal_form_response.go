@@ -32,13 +32,24 @@ func (*ModalFormResponse) ID() uint32 {
 // Marshal ...
 func (pk *ModalFormResponse) Marshal(w *protocol.Writer) {
 	w.Varuint32(&pk.FormID)
-	protocol.OptionalFunc(w, &pk.ResponseData, w.ByteSlice)
-	protocol.OptionalFunc(w, &pk.CancelReason, w.Uint8)
+	if w.Protocol() >= protocol.V544 {
+		protocol.OptionalFunc(w, &pk.ResponseData, w.ByteSlice)
+		protocol.OptionalFunc(w, &pk.CancelReason, w.Uint8)
+	} else {
+		responseData, _ := pk.ResponseData.Value()
+		w.ByteSlice(&responseData)
+	}
 }
 
 // Unmarshal ...
 func (pk *ModalFormResponse) Unmarshal(r *protocol.Reader) {
 	r.Varuint32(&pk.FormID)
-	protocol.OptionalFunc(r, &pk.ResponseData, r.ByteSlice)
-	protocol.OptionalFunc(r, &pk.CancelReason, r.Uint8)
+	if r.Protocol() >= protocol.V544 {
+		protocol.OptionalFunc(r, &pk.ResponseData, r.ByteSlice)
+		protocol.OptionalFunc(r, &pk.CancelReason, r.Uint8)
+	} else {
+		var responseData []byte
+		r.ByteSlice(&responseData)
+		pk.ResponseData = protocol.Option(responseData)
+	}
 }
