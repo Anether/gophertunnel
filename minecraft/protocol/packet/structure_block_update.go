@@ -70,7 +70,9 @@ func (pk *StructureBlockUpdate) Marshal(w *protocol.Writer) {
 	protocol.StructSettings(w, &pk.Settings)
 	w.Varint32(&pk.RedstoneSaveMode)
 	w.Bool(&pk.ShouldTrigger)
-	w.Bool(&pk.Waterlogged)
+	if w.Protocol() >= protocol.V554 {
+		w.Bool(&pk.Waterlogged)
+	}
 }
 
 // Unmarshal ...
@@ -84,5 +86,7 @@ func (pk *StructureBlockUpdate) Unmarshal(r *protocol.Reader) {
 	protocol.StructSettings(r, &pk.Settings)
 	r.Varint32(&pk.RedstoneSaveMode)
 	r.Bool(&pk.ShouldTrigger)
-	r.Bool(&pk.Waterlogged)
+	if r.Protocol() >= protocol.V554 {
+		r.Bool(&pk.Waterlogged)
+	}
 }

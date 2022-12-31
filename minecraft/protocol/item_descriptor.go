@@ -42,9 +42,21 @@ type DefaultItemDescriptor struct {
 
 // Marshal ...
 func (x *DefaultItemDescriptor) Marshal(r IO) {
-	r.Int16(&x.NetworkID)
+	if r.Protocol() >= V554 {
+		r.Int16(&x.NetworkID)
+		if x.NetworkID != 0 {
+			r.Int16(&x.MetadataValue)
+		}
+		return
+	}
+	var netId int32
+	r.Varint32(&netId)
+	x.NetworkID = int16(netId)
+
 	if x.NetworkID != 0 {
-		r.Int16(&x.MetadataValue)
+		var meta int32
+		r.Varint32(&meta)
+		x.MetadataValue = int16(meta)
 	}
 }
 

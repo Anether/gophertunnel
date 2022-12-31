@@ -34,16 +34,22 @@ func (*NetworkSettings) ID() uint32 {
 func (pk *NetworkSettings) Marshal(w *protocol.Writer) {
 	id := pk.CompressionAlgorithm.EncodeCompression()
 	w.Uint16(&pk.CompressionThreshold)
-	w.Uint16(&id)
+	if w.Protocol() >= protocol.V554 {
+		w.Uint16(&id)
 
-	w.Bool(&pk.ClientThrottle)
-	w.Uint8(&pk.ClientThrottleThreshold)
-	w.Float32(&pk.ClientThrottleScalar)
+		w.Bool(&pk.ClientThrottle)
+		w.Uint8(&pk.ClientThrottleThreshold)
+		w.Float32(&pk.ClientThrottleScalar)
+	}
 }
 
 // Unmarshal ...
 func (pk *NetworkSettings) Unmarshal(r *protocol.Reader) {
-	r.Uint16(&pk.CompressionThreshold)
+	if r.Protocol() < protocol.V554 {
+		r.Uint16(&pk.CompressionThreshold)
+		pk.CompressionAlgorithm = FlateCompression{}
+		return
+	}
 
 	var id uint16
 	r.Uint16(&id)
