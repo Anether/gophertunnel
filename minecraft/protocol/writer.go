@@ -34,6 +34,10 @@ func NewWriter(w interface {
 	return &Writer{w: w, shieldID: shieldID, proto: proto}
 }
 
+func (w *Writer) Protocol() Protocol {
+	return w.proto
+}
+
 // Uint8 writes a uint8 to the underlying buffer.
 func (w *Writer) Uint8(x *uint8) {
 	_ = w.w.WriteByte(*x)

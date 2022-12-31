@@ -70,7 +70,9 @@ func (pk *AddActor) Marshal(w *protocol.Writer) {
 	w.Float32(&pk.BodyYaw)
 	protocol.Slice(w, &pk.Attributes)
 	w.EntityMetadata(&pk.EntityMetadata)
-	protocol.Single(w, &pk.EntityProperties)
+	if w.Protocol() >= protocol.V557 {
+		protocol.Single(w, &pk.EntityProperties)
+	}
 	protocol.Slice(w, &pk.EntityLinks)
 }
 
@@ -87,6 +89,8 @@ func (pk *AddActor) Unmarshal(r *protocol.Reader) {
 	r.Float32(&pk.BodyYaw)
 	protocol.Slice(r, &pk.Attributes)
 	r.EntityMetadata(&pk.EntityMetadata)
-	protocol.Single(r, &pk.EntityProperties)
+	if r.Protocol() >= protocol.V557 {
+		protocol.Single(r, &pk.EntityProperties)
+	}
 	protocol.Slice(r, &pk.EntityLinks)
 }

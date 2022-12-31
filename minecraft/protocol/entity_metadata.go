@@ -294,61 +294,61 @@ func (m EntityMetadata) Flag(key uint32, index uint8) bool {
 }
 
 func EncodeEntityMetadata(metadata EntityMetadata, proto Protocol) EntityMetadata {
-	switch proto {
-	case V557:
-		newMetadata := NewEntityMetadata()
-
-		for i := 0; i < EntityDataFlagDash; i++ {
-			if metadata.Flag(EntityDataKeyFlags, uint8(i)) {
-				newMetadata.SetFlag(EntityDataKeyFlags, uint8(i))
-			}
-		}
-		for i := EntityDataFlagDash; i < EntityDataFlagPushTowardsClosestSpace; i++ {
-			if i == 64 {
-				if metadata.Flag(EntityDataKeyFlagsTwo, 0) {
-					newMetadata.SetFlag(EntityDataKeyFlags, 63)
-				}
-			} else if i < 64 {
-				if metadata.Flag(EntityDataKeyFlags, uint8(i)) {
-					newMetadata.SetFlag(EntityDataKeyFlags, uint8(i-1))
-				}
-			} else {
-				if metadata.Flag(EntityDataKeyFlagsTwo, uint8(i%64)) {
-					newMetadata.SetFlag(EntityDataKeyFlagsTwo, uint8((i%64)-1))
-				}
-			}
-		}
-		return newMetadata
+	if proto >= V560 {
+		return metadata
 	}
-	return metadata
+
+	newMetadata := NewEntityMetadata()
+
+	for i := 0; i < EntityDataFlagDash; i++ {
+		if metadata.Flag(EntityDataKeyFlags, uint8(i)) {
+			newMetadata.SetFlag(EntityDataKeyFlags, uint8(i))
+		}
+	}
+	for i := EntityDataFlagDash; i < EntityDataFlagPushTowardsClosestSpace; i++ {
+		if i == 64 {
+			if metadata.Flag(EntityDataKeyFlagsTwo, 0) {
+				newMetadata.SetFlag(EntityDataKeyFlags, 63)
+			}
+		} else if i < 64 {
+			if metadata.Flag(EntityDataKeyFlags, uint8(i)) {
+				newMetadata.SetFlag(EntityDataKeyFlags, uint8(i-1))
+			}
+		} else {
+			if metadata.Flag(EntityDataKeyFlagsTwo, uint8(i%64)) {
+				newMetadata.SetFlag(EntityDataKeyFlagsTwo, uint8((i%64)-1))
+			}
+		}
+	}
+	return newMetadata
 }
 
 func DecodeEntityMetadata(metadata EntityMetadata, proto Protocol) EntityMetadata {
-	switch proto {
-	case V557:
-		newMetadata := NewEntityMetadata()
-
-		for i := 0; i < EntityDataFlagDash; i++ {
-			if metadata.Flag(EntityDataKeyFlags, uint8(i)) {
-				newMetadata.SetFlag(EntityDataKeyFlags, uint8(i))
-			}
-		}
-		for i := EntityDataFlagDash; i < EntityDataFlagPushTowardsClosestSpace; i++ {
-			if i == 64 {
-				if metadata.Flag(EntityDataKeyFlags, 63) {
-					newMetadata.SetFlag(EntityDataKeyFlagsTwo, 0)
-				}
-			} else if i < 64 {
-				if metadata.Flag(EntityDataKeyFlags, uint8(i)) {
-					newMetadata.SetFlag(EntityDataKeyFlags, uint8(i+1))
-				}
-			} else {
-				if metadata.Flag(EntityDataKeyFlagsTwo, uint8(i%64)) {
-					newMetadata.SetFlag(EntityDataKeyFlagsTwo, uint8((i%64)+1))
-				}
-			}
-		}
-		return newMetadata
+	if proto >= V560 {
+		return metadata
 	}
-	return metadata
+
+	newMetadata := NewEntityMetadata()
+
+	for i := 0; i < EntityDataFlagDash; i++ {
+		if metadata.Flag(EntityDataKeyFlags, uint8(i)) {
+			newMetadata.SetFlag(EntityDataKeyFlags, uint8(i))
+		}
+	}
+	for i := EntityDataFlagDash; i < EntityDataFlagPushTowardsClosestSpace; i++ {
+		if i == 64 {
+			if metadata.Flag(EntityDataKeyFlags, 63) {
+				newMetadata.SetFlag(EntityDataKeyFlagsTwo, 0)
+			}
+		} else if i < 64 {
+			if metadata.Flag(EntityDataKeyFlags, uint8(i)) {
+				newMetadata.SetFlag(EntityDataKeyFlags, uint8(i+1))
+			}
+		} else {
+			if metadata.Flag(EntityDataKeyFlagsTwo, uint8(i%64)) {
+				newMetadata.SetFlag(EntityDataKeyFlagsTwo, uint8((i%64)+1))
+			}
+		}
+	}
+	return newMetadata
 }
