@@ -49,12 +49,12 @@ func (x *DefaultItemDescriptor) Marshal(r IO) {
 		}
 		return
 	}
-	var netId int32
+	netId := int32(x.NetworkID)
 	r.Varint32(&netId)
 	x.NetworkID = int16(netId)
 
 	if x.NetworkID != 0 {
-		var meta int32
+		meta := int32(x.MetadataValue)
 		r.Varint32(&meta)
 		x.MetadataValue = int16(meta)
 	}
