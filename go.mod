@@ -22,9 +22,10 @@ require (
 	github.com/golang/protobuf v1.4.2 // indirect
 	github.com/google/go-cmp v0.5.8 // indirect
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4 // indirect
+	golang.org/x/exp v0.0.0-20220909182711-5c715a9e8561 // indirect
 	golang.org/x/image v0.0.0-20190802002840-cff245a6509b // indirect
 	google.golang.org/appengine v1.6.6 // indirect
 	google.golang.org/protobuf v1.25.0 // indirect
 )
 
-replace github.com/sandertv/go-raknet => github.com/anether/go-raknet v0.0.0-20221226040804-a4664738a300
+replace github.com/sandertv/go-raknet => github.com/anether/go-raknet v0.0.0-20220920223305-ccb18721b8b4
