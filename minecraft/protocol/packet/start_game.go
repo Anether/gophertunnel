@@ -249,7 +249,9 @@ func (pk *StartGame) Marshal(w *protocol.Writer) {
 	w.Varint32(&pk.Difficulty)
 	w.UBlockPos(&pk.WorldSpawn)
 	w.Bool(&pk.AchievementsDisabled)
-	w.Bool(&pk.EditorWorld)
+	if w.Protocol() >= protocol.V534 {
+		w.Bool(&pk.EditorWorld)
+	}
 	w.Varint32(&pk.DayCycleLockTime)
 	w.Varint32(&pk.EducationEditionOffer)
 	w.Bool(&pk.EducationFeaturesEnabled)
@@ -328,7 +330,9 @@ func (pk *StartGame) Unmarshal(r *protocol.Reader) {
 	r.Varint32(&pk.Difficulty)
 	r.UBlockPos(&pk.WorldSpawn)
 	r.Bool(&pk.AchievementsDisabled)
-	r.Bool(&pk.EditorWorld)
+	if r.Protocol() >= protocol.V534 {
+		r.Bool(&pk.EditorWorld)
+	}
 	r.Varint32(&pk.DayCycleLockTime)
 	r.Varint32(&pk.EducationEditionOffer)
 	r.Bool(&pk.EducationFeaturesEnabled)

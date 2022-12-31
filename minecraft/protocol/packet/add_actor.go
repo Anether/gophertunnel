@@ -67,7 +67,9 @@ func (pk *AddActor) Marshal(w *protocol.Writer) {
 	w.Float32(&pk.Pitch)
 	w.Float32(&pk.Yaw)
 	w.Float32(&pk.HeadYaw)
-	w.Float32(&pk.BodyYaw)
+	if w.Protocol() >= protocol.V534 {
+		w.Float32(&pk.BodyYaw)
+	}
 	protocol.Slice(w, &pk.Attributes)
 	w.EntityMetadata(&pk.EntityMetadata)
 	if w.Protocol() >= protocol.V557 {
@@ -86,7 +88,9 @@ func (pk *AddActor) Unmarshal(r *protocol.Reader) {
 	r.Float32(&pk.Pitch)
 	r.Float32(&pk.Yaw)
 	r.Float32(&pk.HeadYaw)
-	r.Float32(&pk.BodyYaw)
+	if r.Protocol() >= protocol.V534 {
+		r.Float32(&pk.BodyYaw)
+	}
 	protocol.Slice(r, &pk.Attributes)
 	r.EntityMetadata(&pk.EntityMetadata)
 	if r.Protocol() >= protocol.V557 {

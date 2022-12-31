@@ -73,6 +73,10 @@ func (*AddPlayer) ID() uint32 {
 func (pk *AddPlayer) Marshal(w *protocol.Writer) {
 	w.UUID(&pk.UUID)
 	w.String(&pk.Username)
+	if w.Protocol() >= protocol.V534 {
+		entityUniqueId := int64(pk.EntityRuntimeID)
+		w.Varint64(&entityUniqueId)
+	}
 	w.Varuint64(&pk.EntityRuntimeID)
 	w.String(&pk.PlatformChatID)
 	w.Vec3(&pk.Position)

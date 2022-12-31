@@ -52,6 +52,27 @@ type AbilityData struct {
 
 // Marshal encodes/decodes an AbilityData.
 func (x *AbilityData) Marshal(r IO) {
+	if r.Protocol() < V534 {
+		var flags1 uint32
+		r.Varuint32(&flags1)
+
+		commandPermission := uint32(x.CommandPermissions)
+		r.Varuint32(&commandPermission)
+		x.CommandPermissions = byte(commandPermission)
+
+		var flags2 uint32
+		r.Varuint32(&flags2)
+
+		playerPermission := uint32(x.PlayerPermissions)
+		r.Varuint32(&playerPermission)
+		x.PlayerPermissions = byte(playerPermission)
+
+		var customFlags uint32
+		r.Varuint32(&customFlags)
+
+		r.Int64(&x.EntityUniqueID)
+		return
+	}
 	r.Int64(&x.EntityUniqueID)
 	r.Uint8(&x.PlayerPermissions)
 	r.Uint8(&x.CommandPermissions)
