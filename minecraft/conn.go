@@ -57,8 +57,8 @@ type Conn struct {
 	log         *log.Logger
 	authEnabled bool
 
-	proto         Protocol
-	acceptedProto []Protocol
+	proto         protocol.Protocol
+	acceptedProto []protocol.Protocol
 	pool          packet.Pool
 	enc           *packet.Encoder
 	dec           *packet.Decoder
@@ -144,7 +144,7 @@ type Conn struct {
 // Minecraft packets to that net.Conn.
 // newConn accepts a private key which will be used to identify the connection. If a nil key is passed, the
 // key is generated.
-func newConn(netConn net.Conn, key *ecdsa.PrivateKey, log *log.Logger, proto Protocol, flushRate time.Duration) *Conn {
+func newConn(netConn net.Conn, key *ecdsa.PrivateKey, log *log.Logger, proto protocol.Protocol, flushRate time.Duration) *Conn {
 	conn := &Conn{
 		enc:        packet.NewEncoder(netConn),
 		dec:        packet.NewDecoder(netConn),
@@ -318,14 +318,12 @@ func (conn *Conn) WritePacket(pk packet.Packet) error {
 	_ = conn.hdr.Write(buf)
 	l := buf.Len()
 
-	for _, converted := range conn.proto.ConvertFromLatest(pk, conn) {
-		converted.Marshal(protocol.NewWriter(buf, conn.shieldID.Load()))
+	pk.Marshal(protocol.NewWriter(buf, conn.shieldID.Load(), conn.proto))
 
-		if conn.packetFunc != nil {
-			conn.packetFunc(*conn.hdr, buf.Bytes()[l:], conn.LocalAddr(), conn.RemoteAddr())
-		}
-		conn.bufferedSend = append(conn.bufferedSend, append([]byte(nil), buf.Bytes()...))
+	if conn.packetFunc != nil {
+		conn.packetFunc(*conn.hdr, buf.Bytes()[l:], conn.LocalAddr(), conn.RemoteAddr())
 	}
+	conn.bufferedSend = append(conn.bufferedSend, append([]byte(nil), buf.Bytes()...))
 	return nil
 }
 
@@ -657,9 +655,9 @@ func (conn *Conn) handlePacket(pk packet.Packet) error {
 func (conn *Conn) handleRequestNetworkSettings(pk *packet.RequestNetworkSettings) error {
 	found := false
 	for _, pro := range conn.acceptedProto {
-		if pro.ID() == pk.ClientProtocol {
+		if int32(pro) == pk.ClientProtocol {
 			conn.proto = pro
-			conn.pool = pro.Packets()
+			conn.pool = packet.NewPool()
 			found = true
 			break
 		}

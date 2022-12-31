@@ -63,7 +63,7 @@ type Dialer struct {
 	// set to the current protocol as implemented in the minecraft/protocol package. Note that packets written
 	// to and read from the Conn are always any of those found in the protocol/packet package, as packets
 	// are converted from and to this Protocol.
-	Protocol Protocol
+	Protocol protocol.Protocol
 
 	// FlushRate is the rate at which packets sent are flushed. Packets are buffered for a duration up to
 	// FlushRate and are compressed/encrypted together to improve compression ratios. The lower this
@@ -146,8 +146,8 @@ func (d Dialer) DialContext(ctx context.Context, network, address string) (conn 
 	if d.ErrorLog == nil {
 		d.ErrorLog = log.New(os.Stderr, "", log.LstdFlags)
 	}
-	if d.Protocol == nil {
-		d.Protocol = DefaultProtocol
+	if d.Protocol == 0 {
+		d.Protocol = protocol.CurrentProtocol
 	}
 	if d.FlushRate == 0 {
 		d.FlushRate = time.Second / 20
@@ -170,7 +170,7 @@ func (d Dialer) DialContext(ctx context.Context, network, address string) (conn 
 	}
 
 	conn = newConn(netConn, key, d.ErrorLog, d.Protocol, d.FlushRate)
-	conn.pool = conn.proto.Packets()
+	conn.pool = packet.NewPool()
 	conn.identityData = d.IdentityData
 	conn.clientData = d.ClientData
 	conn.packetFunc = d.PacketFunc
@@ -208,7 +208,7 @@ func (d Dialer) DialContext(ctx context.Context, network, address string) (conn 
 	go listenConn(conn, d.ErrorLog, l, c)
 
 	conn.expect(packet.IDNetworkSettings)
-	if err := conn.WritePacket(&packet.RequestNetworkSettings{ClientProtocol: d.Protocol.ID()}); err != nil {
+	if err := conn.WritePacket(&packet.RequestNetworkSettings{ClientProtocol: int32(d.Protocol)}); err != nil {
 		return nil, err
 	}
 	_ = conn.Flush()
@@ -221,7 +221,7 @@ func (d Dialer) DialContext(ctx context.Context, network, address string) (conn 
 	case <-l:
 		// We've received our network settings, so we can now send our login request.
 		conn.expect(packet.IDServerToClientHandshake, packet.IDPlayStatus)
-		if err := conn.WritePacket(&packet.Login{ConnectionRequest: request, ClientProtocol: d.Protocol.ID()}); err != nil {
+		if err := conn.WritePacket(&packet.Login{ConnectionRequest: request, ClientProtocol: int32(d.Protocol)}); err != nil {
 			return nil, err
 		}
 		_ = conn.Flush()

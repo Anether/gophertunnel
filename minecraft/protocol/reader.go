@@ -22,14 +22,15 @@ type Reader struct {
 		io.ByteReader
 	}
 	shieldID int32
+	proto    Protocol
 }
 
 // NewReader creates a new Reader using the io.ByteReader passed as underlying source to read bytes from.
 func NewReader(r interface {
 	io.Reader
 	io.ByteReader
-}, shieldID int32) *Reader {
-	return &Reader{r: r, shieldID: shieldID}
+}, shieldID int32, proto Protocol) *Reader {
+	return &Reader{r: r, shieldID: shieldID, proto: proto}
 }
 
 // Uint8 reads a uint8 from the underlying buffer.
@@ -313,6 +314,8 @@ func (r *Reader) EntityMetadata(x *map[uint32]any) {
 			r.UnknownEnumOption(dataType, "entity metadata")
 		}
 	}
+
+	*x = DecodeEntityMetadata(*x, r.proto)
 }
 
 // ItemDescriptorCount reads an ItemDescriptorCount i from the underlying buffer.
@@ -368,7 +371,7 @@ func (r *Reader) ItemInstance(i *ItemInstance) {
 	r.ByteSlice(&extraData)
 
 	buf := bytes.NewBuffer(extraData)
-	bufReader := NewReader(buf, r.shieldID)
+	bufReader := NewReader(buf, r.shieldID, r.proto)
 
 	var length int16
 	bufReader.Int16(&length)
@@ -416,7 +419,7 @@ func (r *Reader) Item(x *ItemStack) {
 	r.ByteSlice(&extraData)
 
 	buf := bytes.NewBuffer(extraData)
-	bufReader := NewReader(buf, r.shieldID)
+	bufReader := NewReader(buf, r.shieldID, r.proto)
 
 	var length int16
 	bufReader.Int16(&length)

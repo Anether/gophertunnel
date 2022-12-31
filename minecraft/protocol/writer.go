@@ -23,14 +23,15 @@ type Writer struct {
 		io.ByteWriter
 	}
 	shieldID int32
+	proto    Protocol
 }
 
 // NewWriter creates a new initialised Writer with an underlying io.ByteWriter to write to.
 func NewWriter(w interface {
 	io.Writer
 	io.ByteWriter
-}, shieldID int32) *Writer {
-	return &Writer{w: w, shieldID: shieldID}
+}, shieldID int32, proto Protocol) *Writer {
+	return &Writer{w: w, shieldID: shieldID, proto: proto}
 }
 
 // Uint8 writes a uint8 to the underlying buffer.
@@ -183,6 +184,9 @@ func (w *Writer) GameRule(x *GameRule) {
 
 // EntityMetadata writes an entity metadata map x to the underlying buffer.
 func (w *Writer) EntityMetadata(x *map[uint32]any) {
+	converted := EncodeEntityMetadata(*x, w.proto)
+	x = (*map[uint32]any)(&converted)
+
 	l := uint32(len(*x))
 	w.Varuint32(&l)
 
@@ -288,7 +292,7 @@ func (w *Writer) ItemInstance(i *ItemInstance) {
 	w.Varint32(&x.BlockRuntimeID)
 
 	buf := new(bytes.Buffer)
-	bufWriter := NewWriter(buf, w.shieldID)
+	bufWriter := NewWriter(buf, w.shieldID, w.proto)
 
 	var length int16
 	if len(x.NBTData) != 0 {
@@ -328,7 +332,7 @@ func (w *Writer) Item(x *ItemStack) {
 
 	var extraData []byte
 	buf := bytes.NewBuffer(extraData)
-	bufWriter := NewWriter(buf, w.shieldID)
+	bufWriter := NewWriter(buf, w.shieldID, w.proto)
 
 	var length int16
 	if len(x.NBTData) != 0 {

@@ -40,7 +40,7 @@ type ListenConfig struct {
 	// AcceptedProtocols is a slice of Protocol accepted by a Listener created with this ListenConfig. The current
 	// Protocol is always added to this slice. Clients with a protocol version that is not present in this slice will
 	// be disconnected.
-	AcceptedProtocols []Protocol
+	AcceptedProtocols []protocol.Protocol
 	// Compression is the packet.Compression to use for packets sent over this Conn. If set to nil, the compression
 	// will default to packet.FlateCompression.
 	Compression packet.Compression // TODO: Change this to snappy once Windows crashes are resolved.
@@ -222,10 +222,13 @@ func (listener *Listener) listen() {
 // createConn creates a connection for the net.Conn passed and adds it to the listener, so that it may be
 // accepted once its login sequence is complete.
 func (listener *Listener) createConn(netConn net.Conn) {
-	conn := newConn(netConn, listener.key, listener.cfg.ErrorLog, proto{}, listener.cfg.FlushRate)
-	conn.acceptedProto = append(listener.cfg.AcceptedProtocols, proto{})
+	conn := newConn(netConn, listener.key, listener.cfg.ErrorLog, protocol.CurrentProtocol, listener.cfg.FlushRate)
+	conn.acceptedProto = listener.cfg.AcceptedProtocols
+	if len(conn.acceptedProto) == 0 {
+		conn.acceptedProto = append(conn.acceptedProto, protocol.CurrentProtocol)
+	}
 	conn.compression = listener.cfg.Compression
-	conn.pool = conn.proto.Packets()
+	conn.pool = packet.NewPool()
 
 	conn.packetFunc = listener.cfg.PacketFunc
 	conn.texturePacksRequired = listener.cfg.TexturePacksRequired
